@@ -11,14 +11,14 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
-        host: '0.0.0.0',  // Allow external connections
+        host: '0.0.0.0',
         port: 5173,
         hmr: {
-            host: 'localhost',  // HMR host for browser
+            host: 'localhost',
             port: 5173,
         },
         watch: {
-            usePolling: true,  // Important for Docker file watching
+            usePolling: true,
         },
     },
 });
