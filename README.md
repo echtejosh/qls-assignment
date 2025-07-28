@@ -1,4 +1,4 @@
-# QLS assignment
+# QLS Assignment
 
 This is a simple Laravel application for the QLS assignment.
 
@@ -38,9 +38,11 @@ Make sure Docker is running after installation.
 
 4. **Access the application**
 
+> [!IMPORTANT]
+> It might take a short while before all frontend assets are fully loaded, especially during the first run. Please be patient — the Vite dev server and asset compilation may take a moment to initialize.
+
    Open your browser and navigate to:
 
    ```
    http://127.0.0.1:8000
    ```
-
