@@ -32,18 +32,8 @@ Make sure Docker is running after installation.
 
 3. **Run database migrations**
 
-   Replace `<container_name>` with the actual container name running your Laravel app.
-
-   To find the container name, run:
-
    ```bash
-   docker ps
-   ```
-
-   Then run migrations inside the container:
-
-   ```bash
-   docker exec -it <container_name> php artisan migrate
+   docker-compose exec app php artisan migrate
    ```
 
 4. **Access the application**
