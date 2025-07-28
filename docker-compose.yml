@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # PHP Laravel application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+    volumes:
+      - .:/var/www/html  # Mount entire project for development
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=laravel
+      - DB_USERNAME=sail
+      - DB_PASSWORD=password
+    networks:
+      - app-network
+
+  # Node.js service for Vite
+  node:
+    image: node:20-alpine
+    working_dir: /app
+    ports:
+      - "5173:5173"  # Vite dev server port
+    volumes:
+      - .:/app  # Mount entire project
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:8
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: sail
+      MYSQL_PASSWORD: password
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - app-network
+
+volumes:
+  mysql-data:
+
+networks:
+  app-network:
+    driver: bridge
