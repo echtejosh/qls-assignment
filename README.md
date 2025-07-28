@@ -2,9 +2,10 @@
 
 This is a simple Laravel application for the QLS assignment.
 
----
-
 ## Prerequisites
+
+> [!IMPORTANT]
+> The application will NOT work unless Docker is running.
 
 - Install **Docker Desktop** on your machine:
 
@@ -13,8 +14,6 @@ This is a simple Laravel application for the QLS assignment.
     - For Linux, install Docker Engine: https://docs.docker.com/engine/install/
 
 Make sure Docker is running after installation.
-
----
 
 ## Getting Started
 
@@ -38,7 +37,7 @@ Make sure Docker is running after installation.
 
 4. **Access the application**
 
-> [!IMPORTANT]
+> [!NOTE]
 > It might take a short while before all frontend assets are fully loaded, especially during the first run. Please be patient — the Vite dev server and asset compilation may take a moment to initialize.
 
    Open your browser and navigate to:
