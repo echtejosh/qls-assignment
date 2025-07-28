@@ -10,11 +10,30 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+
+    <style>
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        button, .button, [role="button"] {
+            cursor: pointer;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+    </style>
 </head>
 
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-8">
     <div class="container mx-auto p-6">
-        <!-- Header -->
         <div class="bg-white rounded-lg mb-8">
             <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-lg">
                 <h1 class="text-3xl font-bold flex items-center gap-3">
@@ -25,41 +44,19 @@
             </div>
         </div>
 
-        <!-- Success Messages Only -->
         @if(session('success'))
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
                 <div class="flex items-center gap-2 mb-2">
                     <i class='bx bx-check-circle text-xl'></i>
                     <span>{{ session('success') }}</span>
                 </div>
-
-                @if(session('pdf_ready'))
-                    <div class="mt-4 p-4 bg-white border border-green-300 rounded-lg">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <i class='bx bx-file-blank text-2xl text-green-600'></i>
-                                <div>
-                                    <p class="font-medium text-green-800">📄 Download gereed!</p>
-                                    <p class="text-sm text-green-600">{{ session('pdf_filename') }}</p>
-                                </div>
-                            </div>
-                            <a href="{{ route('orders.download-pakbon', session('pdf_filename')) }}"
-                               class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 font-medium">
-                                <i class='bx bx-download'></i>
-                                Download Pakbon
-                            </a>
-                        </div>
-                    </div>
-                @endif
             </div>
         @endif
 
-        <!-- Main Form -->
         <div class="bg-white rounded-lg overflow-hidden">
             <form method="POST" action="{{ route('orders.store') }}" id="orderForm">
                 @csrf
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
-                    <!-- Order Details Section -->
                     <div class="space-y-6">
                         <div class="border-b border-gray-200 pb-4">
                             <h2 class="text-xl font-semibold flex items-center gap-2 text-gray-800">
@@ -95,7 +92,6 @@
                                  value="{{ old('phone', $formData['phone']) }}" required/>
                     </div>
 
-                    <!-- Shipping & Products Section -->
                     <div class="space-y-6">
                         <div class="border-b border-gray-200 pb-4">
                             <h2 class="text-xl font-semibold flex items-center gap-2 text-gray-800">
@@ -110,7 +106,7 @@
                                 Verzendmethode
                             </label>
                             <select name="shipping_method"
-                                    class="block w-full border border-gray-300 rounded-md p-3 "
+                                    class="block w-full border border-gray-300 rounded-md p-3 cursor-pointer"
                                     required>
                                 @foreach ($shippingOptions as $data)
                                     <option value="{{ $data['id'] }}"
@@ -123,8 +119,8 @@
 
                         <div class="flex items-center space-x-3">
                             <input type="checkbox" id="levering_bij_buren" name="levering_bij_buren"
-                                   class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
-                            <label for="levering_bij_buren" class="text-sm text-gray-700 flex items-center gap-2">
+                                   class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer">
+                            <label for="levering_bij_buren" class="text-sm text-gray-700 flex items-center gap-2 cursor-pointer">
                                 Levering bij buren toestaan
                             </label>
                         </div>
@@ -140,13 +136,15 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="bg-gray-50 px-8 py-6 border-t border-gray-200">
                     <div class="flex flex-wrap gap-4 items-center">
-                        <button type="submit"
-                                class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center gap-2 font-medium shadow-md">
-                            <i class='bx bx-save'></i>
-                            Maak Bestelling Aan
+                        <button type="submit" id="submitBtn"
+                                class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center gap-2 font-medium shadow-md cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
+                            <i class='bx bx-save' id="submitIcon"></i>
+                            <div class="spinner hidden" id="loadingSpinner">
+                                <i class='bx bx-loader-alt'></i>
+                            </div>
+                            <span id="submitText">Maak Bestelling Aan</span>
                         </button>
 
                         <div class="text-sm text-gray-600">
@@ -155,7 +153,6 @@
                         </div>
                     </div>
 
-                    <!-- Error Messages - Positioned under submit button -->
                     @if($errors->any())
                         <div class="mt-6 bg-red-50 border border-red-200 rounded-lg p-4 shadow-sm">
                             <div class="flex items-start gap-3">
@@ -184,6 +181,34 @@
     </div>
 
     @livewireScripts
+
+    <script>
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            const submitIcon = document.getElementById('submitIcon');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const submitText = document.getElementById('submitText');
+
+            submitBtn.disabled = true;
+
+            submitIcon.classList.add('hidden');
+            loadingSpinner.classList.remove('hidden');
+
+            submitText.textContent = 'Bestelling wordt aangemaakt...';
+        });
+
+        window.addEventListener('load', function() {
+            const submitBtn = document.getElementById('submitBtn');
+            const submitIcon = document.getElementById('submitIcon');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const submitText = document.getElementById('submitText');
+
+            submitBtn.disabled = false;
+            submitIcon.classList.remove('hidden');
+            loadingSpinner.classList.add('hidden');
+            submitText.textContent = 'Maak Bestelling Aan';
+        });
+    </script>
 </body>
 
 </html>
